@@ -1,0 +1,306 @@
+groups:
+  - name: mysql_core
+    interval: 30s
+    rules:
+      - alert: MySQLCpuUsageHigh
+        expr: mysql_cpu_usage > 80
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL CPU使用率过高"
+          description: "实例 {{ $labels.instance }} CPU使用率 {{ $value }}% 超过80%"
+
+      - alert: MySQLMemUsageHigh
+        expr: mysql_mem_usage > 90
+        for: 5s
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL 内存使用率过高"
+          description: "实例 {{ $labels.instance }} 内存使用率 {{ $value }}% 超过90%"
+
+      - alert: MySQLBinlogDiskUsageHigh
+        expr: mysql_binlog_disk_used_rate > 80
+        for: 5s
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL Binlog盘使用率过高"
+          description: "实例 {{ $labels.instance }} Binlog盘使用率 {{ $value }}% 超过80%"
+
+      - alert: MySQLDatadirDiskUsageHigh
+        expr: mysql_datadir_used_rate > 80
+        for: 5s
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL 数据盘使用率过高"
+          description: "实例 {{ $labels.instance }} 数据盘使用率 {{ $value }}% 超过80%"
+
+      - alert: MySQLRestarted
+        expr: mysql_is_restart >= 1
+        for: 5s
+        labels:
+          severity: critical
+        annotations:
+          summary: "MySQL 发生重启"
+          description: "实例 {{ $labels.instance }} 发生重启"
+
+      - alert: MySQLDown
+        expr: mysql_alive != 1
+        for: 5s
+        labels:
+          severity: critical
+        annotations:
+          summary: "MySQL 实例异常"
+          description: "实例 {{ $labels.instance }} 不可用"
+
+  - name: mysql_performance
+    interval: 30s
+    rules:
+      - alert: MySQLSlowQueryHigh
+        expr: mysql_slow_query > 25
+        for: 5s
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL 慢查询过多"
+          description: "实例 {{ $labels.instance }} 慢查询数 {{ $value }} 超过25"
+
+      - alert: MySQLActiveThreadsHigh
+        expr: mysql_active_thread_count > 200
+        for: 15s
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL 活跃线程数过高"
+          description: "实例 {{ $labels.instance }} 活跃线程数 {{ $value }} 超过200"
+
+      - alert: MySQLWaitingThreadsHigh
+        expr: mysql_waiting_thread_count > 200
+        for: 15s
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL 等待线程数过高"
+          description: "实例 {{ $labels.instance }} 等待线程数 {{ $value }} 超过200"
+
+      - alert: MySQLRunningThreadsHigh
+        expr: mysql_threads_running > 200
+        for: 15s
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL 运行线程数过高"
+          description: "实例 {{ $labels.instance }} 运行线程数 {{ $value }} 超过200"
+
+      - alert: MySQLDeadlocksHigh
+        expr: mysql_innodb_dead_locks > 10
+        for: 5s
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL 死锁过多"
+          description: "实例 {{ $labels.instance }} 死锁数 {{ $value }} 超过10"
+
+      - alert: MySQLLockWaitThreadsHigh
+        expr: mysql_innodb_lock_threads_waiting > 20
+        for: 15s
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL 锁等待线程过多"
+          description: "实例 {{ $labels.instance }} 锁等待线程数 {{ $value }} 超过20"
+
+      - alert: MySQLIODelayHigh
+        expr: mysql_io_delay > 30
+        for: 5s
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL IO延迟过高"
+          description: "实例 {{ $labels.instance }} IO延迟 {{ $value }}ms 超过30ms"
+
+  - name: mysql_connection
+    interval: 30s
+    rules:
+      - alert: MySQLConnUsageHigh
+        expr: mysql_conn_usage_rate > 80
+        for: 5s
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL 连接使用率过高"
+          description: "实例 {{ $labels.instance }} 连接使用率 {{ $value }}% 超过80%"
+
+      - alert: MySQLFileHandleUsageHigh
+        expr: mysql_process_fh_usage > 80
+        for: 5s
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL 文件句柄使用率过高"
+          description: "实例 {{ $labels.instance }} 文件句柄使用率 {{ $value }}% 超过80%"
+
+      - alert: MySQLFileHandleMaxLow
+        expr: mysql_process_fh_max < 10000
+        for: 5s
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL 最大文件句柄数过低"
+          description: "实例 {{ $labels.instance }} 最大文件句柄数 {{ $value }} 低于10000"
+
+      - alert: MySQLTCPConnectionFailed
+        expr: mysql_tcp_connected_status != 1
+        for: 5s
+        labels:
+          severity: critical
+        annotations:
+          summary: "MySQL TCP连接异常"
+          description: "实例 {{ $labels.instance }} TCP连接失败"
+
+  - name: mysql_backup
+    interval: 60s
+    rules:
+      - alert: MySQLXtrabackupFailed
+        expr: mysql_backup_monitor_xtrabckup != 0
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL Xtrabackup备份异常"
+          description: "实例 {{ $labels.instance }} Xtrabackup备份状态异常"
+
+      - alert: MySQLXtrabackupTmpNotEmpty
+        expr: mysql_xtrabackuptmp_not_empty == 1
+        for: 5s
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL Xtrabackup临时目录非空"
+          description: "实例 {{ $labels.instance }} Xtrabackup临时目录非空"
+
+      - alert: MySQLBackupStatusAbnormal
+        expr: mysql_is_backing_up == 2
+        for: 5s
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL 备份状态异常"
+          description: "实例 {{ $labels.instance }} 备份状态异常"
+
+      - alert: MySQLBinlogBackupFailed
+        expr: mysql_backup_monitor_binlog != 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL Binlog备份异常"
+          description: "实例 {{ $labels.instance }} Binlog备份状态异常"
+
+  - name: mysql_other
+    interval: 30s
+    rules:
+      - alert: MySQLConfigMismatch
+        expr: mysql_sqlasyn_config_and_runtime_mismatch == 1
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL 同步配置不一致"
+          description: "实例 {{ $labels.instance }} 配置与运行时不一致"
+
+      - alert: MySQLReadOnly
+        expr: mysql_read_only == 1
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL 处于只读模式"
+          description: "实例 {{ $labels.instance }} 处于只读模式"
+
+      - alert: MySQLBytesSentHigh
+        expr: mysql_bytes_sent > 314572800
+        for: 5s
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL 发送流量过大"
+          description: "实例 {{ $labels.instance }} 发送流量 {{ $value }} 超过300MB"
+
+      - alert: MySQLBytesReceivedHigh
+        expr: mysql_bytes_received > 314572800
+        for: 5s
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL 接收流量过大"
+          description: "实例 {{ $labels.instance }} 接收流量 {{ $value }} 超过300MB"
+
+  - name: device
+    interval: 30s
+    rules:
+      - alert: DeviceCpuUsageHigh
+        expr: device_cpu_urate > 80
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "设备CPU使用率过高"
+          description: "设备 {{ $labels.instance }} CPU使用率 {{ $value }}% 超过80%"
+
+      - alert: DeviceMemUsageHigh
+        expr: device_mem_urate > 80
+        for: 5s
+        labels:
+          severity: warning
+        annotations:
+          summary: "设备内存使用率过高"
+          description: "设备 {{ $labels.instance }} 内存使用率 {{ $value }}% 超过80%"
+
+      - alert: DeviceDataDisk0UsageHigh
+        expr: device_disk_data0_usage > 80
+        for: 5s
+        labels:
+          severity: warning
+        annotations:
+          summary: "设备数据盘0使用率过高"
+          description: "设备 {{ $labels.instance }} 数据盘0使用率 {{ $value }}% 超过80%"
+
+      - alert: DeviceDataDisk1UsageHigh
+        expr: device_disk_data1_usage > 80
+        for: 5s
+        labels:
+          severity: warning
+        annotations:
+          summary: "设备数据盘1使用率过高"
+          description: "设备 {{ $labels.instance }} 数据盘1使用率 {{ $value }}% 超过80%"
+
+      - alert: DeviceSysDiskUsageHigh
+        expr: device_disk_sys_usage > 80
+        for: 5s
+        labels:
+          severity: warning
+        annotations:
+          summary: "设备系统盘使用率过高"
+          description: "设备 {{ $labels.instance }} 系统盘使用率 {{ $value }}% 超过80%"
+
+      - alert: DeviceLogDisk0UsageHigh
+        expr: device_disk_log0_usage > 80
+        for: 5s
+        labels:
+          severity: warning
+        annotations:
+          summary: "设备日志盘0使用率过高"
+          description: "设备 {{ $labels.instance }} 日志盘0使用率 {{ $value }}% 超过80%"
+
+      - alert: DeviceLogDisk1UsageHigh
+        expr: device_disk_log1_usage > 80
+        for: 5s
+        labels:
+          severity: warning
+        annotations:
+          summary: "设备日志盘1使用率过高"
+          description: "设备 {{ $labels.instance }} 日志盘1使用率 {{ $value }}% 超过80%"

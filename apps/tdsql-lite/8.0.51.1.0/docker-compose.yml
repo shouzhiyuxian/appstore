@@ -1,0 +1,344 @@
+services:
+  # ============================================================
+  # pause 容器：持有 MySQL 网络和 PID 命名空间（类似 K8s Pod sandbox）
+  # ============================================================
+  tdsql-pause:
+    image: pause:8.0.51.1.0
+    pull_policy: missing
+    container_name: ${CONTAINER_NAME:-tdsql}-pause
+    hostname: ${CONTAINER_NAME:-tdsql}-mysql
+    restart: unless-stopped
+    networks:
+      tdsql-net:
+        aliases:
+          - ${CONTAINER_NAME:-tdsql}-mysql
+    ports:
+      - "${TDSQL_PORT:-3306}:3306"
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 16M
+          cpus: '0.01'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "1"
+
+  # ============================================================
+  # MySQL 主容器：共享 pause 的网络和 PID
+  # ============================================================
+  tdsql-mysql:
+    image: tdsql-mysql:8.0.51.1.0
+    pull_policy: missing
+    container_name: ${CONTAINER_NAME:-tdsql}-mysql
+    restart: unless-stopped
+    user: "6666:6666"
+    cap_add:
+      - SYS_PTRACE
+    depends_on:
+      - tdsql-pause
+    network_mode: "service:tdsql-pause"
+    pid: "service:tdsql-pause"
+    environment:
+      - TDSQL_NODE_ID=${CONTAINER_NAME:-tdsql}-mysql
+      - TDSQL_MEMORY_GB=${TDSQL_MEMORY_GB:-4}
+      - CHARACTER_SET_SERVER=${CHARACTER_SET_SERVER:-utf8mb4}
+      - COLLATION_SERVER=${COLLATION_SERVER:-utf8mb4_0900_ai_ci}
+      - TIMEZONE=${TIMEZONE:-+08:00}
+      - HOST_BACKUP_PATH=/backup
+    volumes:
+      - ./data/mysql:/data
+      - ./backup:/backup
+    deploy:
+      resources:
+        limits:
+          memory: ${TDSQL_MEMORY_GB:-4}G
+          cpus: '${TDSQL_CPU_CORE:-2}'
+        reservations:
+          memory: ${TDSQL_MEMORY_GB:-4}G
+          cpus: '${TDSQL_CPU_CORE:-2}'
+    security_opt:
+      - no-new-privileges:true
+    ulimits:
+      nofile:
+        soft: 600000
+        hard: 600000
+      memlock:
+        soft: -1
+        hard: -1
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  # ============================================================
+  # Agent sidecar：共享 pause 的网络和 PID
+  # ============================================================
+  tdsql-agent:
+    image: tdsql-agent:8.0.51.1.0
+    pull_policy: missing
+    container_name: ${CONTAINER_NAME:-tdsql}-agent
+    restart: unless-stopped
+    user: "6666:6666"
+    cap_add:
+      - SYS_PTRACE
+    depends_on:
+      - tdsql-pause
+    network_mode: "service:tdsql-pause"
+    pid: "service:tdsql-pause"
+    environment:
+      - TDSQL_NODE_ID=${CONTAINER_NAME:-tdsql}-mysql
+      - TDSQL_MEMORY_GB=${TDSQL_MEMORY_GB:-4}
+      - TDSQL_CPU_CORE=${TDSQL_CPU_CORE:-2}
+      - TDSQL_STORAGE_GB=${TDSQL_STORAGE_GB:-0}
+      - ETCD_ENDPOINTS=http://${CONTAINER_NAME:-tdsql}-manager:2379
+      - MYSQL_USER=tdsqlsys_agent
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - EXTERNAL_HOST=${TDSQL_HOST_IP}
+      - EXTERNAL_DB_PORT=${TDSQL_PORT:-3306}
+      - XTRABACKUP_BIN=/data/mysql-server-8.0.30/xtrabackup/xtrabackup
+      - HOST_BACKUP_PATH=/backup
+    volumes:
+      - ./data/mysql:/data
+      - ./backup:/backup
+      - ./etc/agent:/app/etc
+      - ./tools:/app/tools:ro
+      - ./tools/tdsql-lite-tool:/app/tdsql-lite-tool:ro
+    deploy:
+      resources:
+        limits:
+          memory: ${TDSQL_AGENT_MEMORY:-2G}
+          cpus: '${TDSQL_AGENT_CPU_CORE:-0.5}'
+        reservations:
+          memory: ${TDSQL_AGENT_MEMORY:-2G}
+          cpus: '${TDSQL_AGENT_CPU_CORE:-0.5}'
+    security_opt:
+      - no-new-privileges:true
+
+  # ============================================================
+  # Manager（内嵌 etcd:2379，不暴露宿主机端口）
+  # ============================================================
+  tdsql-manager:
+    image: tdsql-manager:8.0.51.1.0
+    pull_policy: missing
+    container_name: ${CONTAINER_NAME:-tdsql}-manager
+    hostname: ${CONTAINER_NAME:-tdsql}-manager
+    restart: unless-stopped
+    networks:
+      tdsql-net:
+        aliases:
+          - ${CONTAINER_NAME:-tdsql}-manager
+    ports:
+      - "${PANEL_APP_PORT_HTTP:-8086}:8080"
+    environment:
+      - CONSOLE_PORT=8080
+      - HOST_DATA_DIR=/data
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - EXTERNAL_HOST=${TDSQL_HOST_IP}
+      - EXTERNAL_DB_PORT=${TDSQL_PORT:-3306}
+      - AGENT_LOG_DIR=/data/tdsql-agent/log
+      - VM_URL=http://${CONTAINER_NAME:-tdsql}-victoriametrics:${VM_PORT:-8428}
+      - VM_AUTH_USER=admin
+      - VM_AUTH_PASSWORD_ENCRYPTED=${VM_AUTH_PASSWORD_ENCRYPTED}
+      - ENABLE_MONITOR=${INSTALL_MONITORING:-true}
+    volumes:
+      - ./data/manager:/data
+      - ./etc/manager:/data/config
+      - ./logs/manager:/data/log
+      - ./tools:/data/tools:ro
+      - ./tools/tdsql-lite-tool:/app/tdsql-lite-tool:ro
+      - ./etc/monitoring:/data/monitoring:ro
+      - ./TDSQL-LICENSE-20260429220691.lic:/data/config/license.lic:ro
+      - /sys/class/dmi/id/product_name:/host/dmi/product_name:ro
+      - /sys/class/dmi/id/product_uuid:/host/dmi/product_uuid:ro
+      - /etc/machine-id:/host/etc/machine-id:ro
+    deploy:
+      resources:
+        limits:
+          memory: ${MANAGER_MEMORY_LIMIT:-1}G
+          cpus: '${MANAGER_CPU_LIMIT:-0.5}'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+    security_opt:
+      - no-new-privileges:true
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  # ============================================================
+  # VictoriaMetrics - 时序数据库
+  # ============================================================
+  victoriametrics:
+    image: victoria-metrics:8.0.51.1.0
+    pull_policy: missing
+    container_name: ${CONTAINER_NAME:-tdsql}-victoriametrics
+    hostname: ${CONTAINER_NAME:-tdsql}-victoriametrics
+    restart: unless-stopped
+    networks:
+      - tdsql-net
+    ports:
+      - "${VM_PORT:-8428}:8428"
+    volumes:
+      - ./data/monitoring/victoriametrics:/victoria-metrics-data
+    command:
+      - "-storageDataPath=/victoria-metrics-data"
+      - "-retentionPeriod=${VM_RETENTION:-30d}"
+      - "-httpListenAddr=:8428"
+      - "-httpAuth.username=${VM_AUTH_USER:-admin}"
+      - "-httpAuth.password=${VM_AUTH_PASSWORD}"
+    deploy:
+      resources:
+        limits:
+          memory: ${VM_MEMORY_LIMIT:-2}G
+          cpus: '${VM_CPU_LIMIT:-1}'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  # ============================================================
+  # vmalert - 告警评估引擎
+  # ============================================================
+  vmalert:
+    image: vmalert:8.0.51.1.0
+    pull_policy: missing
+    container_name: ${CONTAINER_NAME:-tdsql}-vmalert
+    hostname: ${CONTAINER_NAME:-tdsql}-vmalert
+    restart: unless-stopped
+    networks:
+      - tdsql-net
+    ports:
+      - "${VMALERT_PORT:-8880}:8880"
+    volumes:
+      - ./etc/monitoring/rules:/etc/vmalert/rules:ro
+    command:
+      - "-datasource.url=http://${CONTAINER_NAME:-tdsql}-victoriametrics:8428"
+      - "-datasource.basicAuth.username=${VM_AUTH_USER:-admin}"
+      - "-datasource.basicAuth.password=${VM_AUTH_PASSWORD}"
+      - "-remoteRead.url=http://${CONTAINER_NAME:-tdsql}-victoriametrics:8428"
+      - "-remoteRead.basicAuth.username=${VM_AUTH_USER:-admin}"
+      - "-remoteRead.basicAuth.password=${VM_AUTH_PASSWORD}"
+      - "-remoteWrite.url=http://${CONTAINER_NAME:-tdsql}-victoriametrics:8428"
+      - "-remoteWrite.basicAuth.username=${VM_AUTH_USER:-admin}"
+      - "-remoteWrite.basicAuth.password=${VM_AUTH_PASSWORD}"
+      - "-notifier.url=http://${CONTAINER_NAME:-tdsql}-alertmanager:9093"
+      - "-notifier.basicAuth.username=${ALERTMANAGER_AUTH_USER:-admin}"
+      - "-notifier.basicAuth.password=${ALERTMANAGER_AUTH_PASSWORD}"
+      - "-rule=/etc/vmalert/rules/*.yaml"
+      - "-httpListenAddr=:8880"
+      - "-evaluationInterval=${VMALERT_EVAL_INTERVAL:-15}s"
+      - "-httpAuth.username=${VMALERT_AUTH_USER:-admin}"
+      - "-httpAuth.password=${VMALERT_AUTH_PASSWORD}"
+    depends_on:
+      - victoriametrics
+      - alertmanager
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+  # ============================================================
+  # Alertmanager - 告警通知管理
+  # ============================================================
+  alertmanager:
+    image: alertmanager:8.0.51.1.0
+    pull_policy: missing
+    container_name: ${CONTAINER_NAME:-tdsql}-alertmanager
+    hostname: ${CONTAINER_NAME:-tdsql}-alertmanager
+    restart: unless-stopped
+    networks:
+      - tdsql-net
+    ports:
+      - "${ALERTMANAGER_PORT:-9093}:9093"
+    volumes:
+      - ./etc/monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - ./etc/monitoring/web.config.yml:/etc/alertmanager/web.config.yml
+      - ./data/monitoring/alertmanager:/alertmanager
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--web.config.file=/etc/alertmanager/web.config.yml"
+      - "--storage.path=/alertmanager"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+  # ============================================================
+  # Post-init：License 校验 + 管理员初始化（Manager 启动后执行）
+  # ============================================================
+  tdsql-post-init:
+    image: tdsql-manager:8.0.51.1.0
+    pull_policy: missing
+    container_name: ${CONTAINER_NAME:-tdsql}-post-init
+    restart: "no"
+    networks:
+      - tdsql-net
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        echo "[TDSQL Post-init] 等待 Manager 就绪..."
+        MANAGER_URL="http://${CONTAINER_NAME:-tdsql}-manager:8080"
+        ETCD_URL="http://${CONTAINER_NAME:-tdsql}-manager:2379"
+        for i in $$(seq 1 60); do
+          if curl -sf "$${MANAGER_URL}/health" >/dev/null 2>&1; then
+            echo "[TDSQL Post-init] Manager API 已就绪"
+            break
+          fi
+          [ $$i -eq 60 ] && echo "[TDSQL Post-init] Manager 启动超时" && exit 1
+          sleep 2
+        done
+
+        echo "[TDSQL Post-init] 校验 License..."
+        /data/tools/tdsql-lite-tool fingerprint verify \
+          --license=/data/config/license.lic \
+          --manager-url="$${MANAGER_URL}" || {
+          echo "[TDSQL Post-init] License 校验失败!"
+          exit 1
+        }
+        echo "[TDSQL Post-init] License 校验通过"
+
+        echo "[TDSQL Post-init] 上传 License..."
+        /data/tools/tdsql-lite-tool fingerprint upload-lic \
+          --manager-url="$${MANAGER_URL}" \
+          --license=/data/config/license.lic || {
+          echo "[TDSQL Post-init] License 上传失败!"
+          exit 1
+        }
+        echo "[TDSQL Post-init] License 上传成功"
+
+        echo "[TDSQL Post-init] 初始化管理员..."
+        /data/tools/tdsql-lite-tool init-admin \
+          --username="${ADMIN_USERNAME:-admin}" \
+          --password="${ADMIN_PASSWORD}" \
+          --etcd-endpoint="$${ETCD_URL}" \
+          --skip-health-check && \
+          echo "[TDSQL Post-init] 管理员初始化成功" || \
+          echo "[TDSQL Post-init] 管理员可能已初始化，跳过"
+
+        echo "[TDSQL Post-init] 全部完成"
+        exec tail -f /dev/null
+    volumes:
+      - ./etc/manager:/data/config:ro
+      - ./tools:/data/tools:ro
+      - ./TDSQL-LICENSE-20260429220691.lic:/data/config/license.lic:ro
+    depends_on:
+      - tdsql-manager
+
+networks:
+  tdsql-net:
+    name: ${CONTAINER_NAME:-tdsql}-network
+    driver: bridge

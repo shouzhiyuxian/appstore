@@ -1,0 +1,49 @@
+# TDSQL-Lite AlertManager 配置
+# 安装脚本会自动替换占位符：
+#   __MANAGER_CONTAINER__  -> 实际 Manager 容器名
+#   __MANAGER_PORT__       -> Manager 容器内部监听端口（CONSOLE_PORT）
+
+global:
+  resolve_timeout: 5m
+
+route:
+  group_by: ['alertname', 'instance']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  receiver: 'default-receiver'
+
+  routes:
+    # Critical 级别告警走单独通道
+    - match:
+        severity: critical
+      receiver: 'critical-receiver'
+      repeat_interval: 1h
+
+receivers:
+  # 默认接收器 - Webhook 回调到 Manager
+  - name: 'default-receiver'
+    webhook_configs:
+      - url: 'http://__MANAGER_CONTAINER__:__MANAGER_PORT__/api/v1/alert/webhook'
+        send_resolved: true
+
+  # Critical 告警接收器
+  - name: 'critical-receiver'
+    webhook_configs:
+      - url: 'http://__MANAGER_CONTAINER__:__MANAGER_PORT__/api/v1/alert/webhook'
+        send_resolved: true
+    # 可选：添加邮件通知
+    # email_configs:
+    #   - to: 'admin@example.com'
+    #     from: 'alertmanager@example.com'
+    #     smarthost: 'smtp.example.com:587'
+    #     auth_username: 'alertmanager@example.com'
+    #     auth_password: 'password'
+
+inhibit_rules:
+  # 当 critical 告警触发时，抑制同实例的 warning 告警
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'instance']

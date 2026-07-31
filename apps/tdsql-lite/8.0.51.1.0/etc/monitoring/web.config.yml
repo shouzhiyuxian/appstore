@@ -1,0 +1,3 @@
+# web.config.yml
+basic_auth_users:
+  admin: __ALERTMANAGER_BCRYPT_HASH__

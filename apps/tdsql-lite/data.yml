@@ -1,0 +1,29 @@
+name: TDSQL-Lite
+tags:
+  - Database
+title: TDSQL-Lite
+description: TDSQL-Lite
+additionalProperties:
+  key: tdsql-lite
+  name: TDSQL-Lite
+  tags:
+    - Database
+  shortDescZh: TDSQL-Lite | 轻量级 MySQL 数据库，内置 Manager 管控 + 监控告警
+  shortDescEn: TDSQL-Lite | Lightweight MySQL with built-in Manager + monitoring
+  shortDescEs: TDSQL-Lite | MySQL ligero con Manager integrado + monitorización
+  shortDescTr: TDSQL-Lite | Dahili Manager + izleme ile hafif MySQL
+  type: tool
+  crossVersionUpdate: true
+  limit: 0
+  website: https://cloud.tencent.com/product/tdsql
+  description:
+    zh: TDSQL-Lite，轻量级分布式 MySQL 数据库。内置 Manager 管控平台、Agent 运维组件、VictoriaMetrics 监控告警。支持离线安装，无需外部依赖。注意：同一台机器多套部署需修改 COMPOSE_PROJECT_NAME。
+    en: TDSQL-Lite. Lightweight distributed MySQL database with built-in Manager, Agent, and VictoriaMetrics monitoring stack. Supports offline installation.
+    zh-Hant: TDSQL-Lite，輕量級分佈式 MySQL 數據庫。內置 Manager 管控平台、Agent 運維組件、VictoriaMetrics 監控告警。支持離線安裝。
+    ja: TDSQL-Lite。軽量分散型 MySQL データベース。Manager、Agent、VictoriaMetrics 監視スタックを内蔵。
+    ms: TDSQL-Lite. Pangkalan data MySQL teragih ringan dengan Manager, Agent, dan timbunan pemantauan VictoriaMetrics terbina dalam.
+    pt-br: TDSQL-Lite. Banco de dados MySQL distribuído leve com Manager, Agent e pilha de monitoramento VictoriaMetrics integrados.
+    ru: TDSQL-Lite. Легковесная распределенная база данных MySQL со встроенными Manager, Agent и стеком мониторинга VictoriaMetrics.
+    ko: TDSQL-Lite. Manager, Agent, VictoriaMetrics 모니터링 스택이 내장된 경량 분산 MySQL 데이터베이스입니다.
+    es-es: TDSQL-Lite. Base de datos MySQL distribuida ligera con Manager, Agent y pila de monitoreo VictoriaMetrics integrados.
+    tr: TDSQL-Lite. Dahili Manager, Agent ve VictoriaMetrics izleme yığını ile hafif dağıtılmış MySQL veritabanı.

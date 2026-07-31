@@ -1,0 +1,393 @@
+additionalProperties:
+  formFields:
+    # ==================== 基础配置 ====================
+    - default: auto
+      edit: true
+      envKey: TDSQL_HOST_IP
+      label:
+        zh: 主机 IP（auto=自动探测）
+        zh-Hant: 主機 IP（auto=自動探測）
+        en: Host IP (auto=detect)
+        es-es: IP del Host (auto=detectar)
+        ja: ホストIP（auto=自動検出）
+        ms: IP Hos (auto=kesan)
+        pt-br: IP do Host (auto=detectar)
+        ru: IP хоста (auto=авто)
+        ko: 호스트 IP(auto=자동 감지)
+        tr: Ana Bilgisayar IP'si (auto=algıla)
+      required: true
+      type: text
+    # ==================== 端口配置 ====================
+    - default: 8086
+      edit: true
+      envKey: PANEL_APP_PORT_HTTP
+      label:
+        zh: Manager 控制台端口
+        zh-Hant: Manager 控制台埠
+        en: Manager Console Port
+        es-es: Puerto de la Consola Manager
+        ja: Manager コンソールポート
+        ms: Port Konsol Manager
+        pt-br: Porta do Console Manager
+        ru: Порт консоли Manager
+        ko: Manager 콘솔 포트
+        tr: Manager Konsol Bağlantı Noktası
+      required: true
+      rule: paramPort
+      type: number
+    - default: 3306
+      edit: true
+      envKey: TDSQL_PORT
+      label:
+        zh: MySQL 端口
+        zh-Hant: MySQL 埠
+        en: MySQL Port
+        es-es: Puerto MySQL
+        ja: MySQL ポート
+        ms: Port MySQL
+        pt-br: Porta MySQL
+        ru: Порт MySQL
+        ko: MySQL 포트
+        tr: MySQL Bağlantı Noktası
+      required: true
+      rule: paramPort
+      type: number
+    - default: 8428
+      edit: true
+      envKey: VM_PORT
+      label:
+        zh: VictoriaMetrics 端口
+        zh-Hant: VictoriaMetrics 埠
+        en: VictoriaMetrics Port
+        es-es: Puerto VictoriaMetrics
+        ja: VictoriaMetrics ポート
+        ms: Port VictoriaMetrics
+        pt-br: Porta VictoriaMetrics
+        ru: Порт VictoriaMetrics
+        ko: VictoriaMetrics 포트
+        tr: VictoriaMetrics Bağlantı Noktası
+      required: true
+      rule: paramPort
+      type: number
+    - default: 8880
+      edit: true
+      envKey: VMALERT_PORT
+      label:
+        zh: VMAlert 端口
+        zh-Hant: VMAlert 埠
+        en: VMAlert Port
+        es-es: Puerto VMAlert
+        ja: VMAlert ポート
+        ms: Port VMAlert
+        pt-br: Porta VMAlert
+        ru: Порт VMAlert
+        ko: VMAlert 포트
+        tr: VMAlert Bağlantı Noktası
+      required: true
+      rule: paramPort
+      type: number
+    - default: 9093
+      edit: true
+      envKey: ALERTMANAGER_PORT
+      label:
+        zh: AlertManager 端口
+        zh-Hant: AlertManager 埠
+        en: AlertManager Port
+        es-es: Puerto AlertManager
+        ja: AlertManager ポート
+        ms: Port AlertManager
+        pt-br: Porta AlertManager
+        ru: Порт AlertManager
+        ko: AlertManager 포트
+        tr: AlertManager Bağlantı Noktası
+      required: true
+      rule: paramPort
+      type: number
+    # ==================== MySQL 配置 ====================
+    - default: 4
+      edit: true
+      envKey: TDSQL_MEMORY_GB
+      label:
+        zh: MySQL 内存限制（GB）
+        zh-Hant: MySQL 記憶體限制（GB）
+        en: MySQL Memory Limit (GB)
+        es-es: Límite de Memoria MySQL (GB)
+        ja: MySQL メモリ制限（GB）
+        ms: Had Memori MySQL (GB)
+        pt-br: Limite de Memória MySQL (GB)
+        ru: Лимит памяти MySQL (GB)
+        ko: MySQL 메모리 제한(GB)
+        tr: MySQL Bellek Sınırı (GB)
+      required: true
+      type: number
+    - default: 2
+      edit: true
+      envKey: TDSQL_CPU_CORE
+      label:
+        zh: MySQL CPU 核心数
+        zh-Hant: MySQL CPU 核心數
+        en: MySQL CPU Cores
+        es-es: Núcleos de CPU MySQL
+        ja: MySQL CPU コア数
+        ms: Teras CPU MySQL
+        pt-br: Núcleos de CPU MySQL
+        ru: Ядра CPU MySQL
+        ko: MySQL CPU 코어 수
+        tr: MySQL CPU Çekirdeği
+      required: true
+      type: number
+    - default: 0
+      edit: true
+      envKey: TDSQL_STORAGE_GB
+      label:
+        zh: MySQL 存储限制（GB，0=不限制）
+        zh-Hant: MySQL 儲存限制（GB，0=不限制）
+        en: MySQL Storage Limit (GB, 0=unlimited)
+        es-es: Límite de Almacenamiento MySQL (GB, 0=ilimitado)
+        ja: MySQL ストレージ制限（GB、0=無制限）
+        ms: Had Storan MySQL (GB, 0=tiada had)
+        pt-br: Limite de Armazenamento MySQL (GB, 0=ilimitado)
+        ru: Лимит хранилища MySQL (GB, 0=без ограничений)
+        ko: MySQL 스토리지 제한(GB, 0=무제한)
+        tr: MySQL Depolama Sınırı (GB, 0=sınırsız)
+      required: true
+      type: number
+    - default: utf8mb4
+      edit: true
+      envKey: CHARACTER_SET_SERVER
+      label:
+        zh: 字符集
+        zh-Hant: 字元集
+        en: Character Set
+        es-es: Conjunto de Caracteres
+        ja: 文字セット
+        ms: Set Aksara
+        pt-br: Conjunto de Caracteres
+        ru: Набор символов
+        ko: 문자 집합
+        tr: Karakter Kümesi
+      required: true
+      type: text
+    - default: utf8mb4_0900_ai_ci
+      edit: true
+      envKey: COLLATION_SERVER
+      label:
+        zh: 排序规则
+        zh-Hant: 排序規則
+        en: Collation
+        es-es: Ordenación
+        ja: 照合順序
+        ms: Kolasi
+        pt-br: Colação
+        ru: Сравнение
+        ko: 정렬 규칙
+        tr: Harmanlama
+      required: true
+      type: text
+    - default: "+08:00"
+      edit: true
+      envKey: TIMEZONE
+      label:
+        zh: 时区
+        zh-Hant: 時區
+        en: Timezone
+        es-es: Zona Horaria
+        ja: タイムゾーン
+        ms: Zon Waktu
+        pt-br: Fuso Horário
+        ru: Часовой пояс
+        ko: 시간대
+        tr: Saat Dilimi
+      required: true
+      type: text
+    # ==================== Agent 配置 ====================
+    - default: "2G"
+      edit: true
+      envKey: TDSQL_AGENT_MEMORY
+      label:
+        zh: Agent 内存限制
+        zh-Hant: Agent 記憶體限制
+        en: Agent Memory Limit
+        es-es: Límite de Memoria del Agent
+        ja: Agent メモリ制限
+        ms: Had Memori Agent
+        pt-br: Limite de Memória do Agent
+        ru: Лимит памяти Agent
+        ko: Agent 메모리 제한
+        tr: Agent Bellek Sınırı
+      required: true
+      type: text
+    - default: "0.5"
+      edit: true
+      envKey: TDSQL_AGENT_CPU_CORE
+      label:
+        zh: Agent CPU 限制
+        zh-Hant: Agent CPU 限制
+        en: Agent CPU Limit
+        es-es: Límite de CPU del Agent
+        ja: Agent CPU 制限
+        ms: Had CPU Agent
+        pt-br: Limite de CPU do Agent
+        ru: Лимит CPU Agent
+        ko: Agent CPU 제한
+        tr: Agent CPU Sınırı
+      required: true
+      type: number
+    # ==================== Manager 配置 ====================
+    - default: 1
+      edit: true
+      envKey: MANAGER_MEMORY_LIMIT
+      label:
+        zh: Manager 内存限制（GB）
+        zh-Hant: Manager 記憶體限制（GB）
+        en: Manager Memory Limit (GB)
+        es-es: Límite de Memoria del Manager (GB)
+        ja: Manager メモリ制限（GB）
+        ms: Had Memori Manager (GB)
+        pt-br: Limite de Memória do Manager (GB)
+        ru: Лимит памяти Manager (GB)
+        ko: Manager 메모리 제한(GB)
+        tr: Manager Bellek Sınırı (GB)
+      required: true
+      type: number
+    - default: "0.5"
+      edit: true
+      envKey: MANAGER_CPU_LIMIT
+      label:
+        zh: Manager CPU 限制
+        zh-Hant: Manager CPU 限制
+        en: Manager CPU Limit
+        es-es: Límite de CPU del Manager
+        ja: Manager CPU 制限
+        ms: Had CPU Manager
+        pt-br: Limite de CPU do Manager
+        ru: Лимит CPU Manager
+        ko: Manager CPU 제한
+        tr: Manager CPU Sınırı
+      required: true
+      type: number
+    - default: info
+      envKey: LOG_LEVEL
+      label:
+        zh: 日志级别
+        zh-Hant: 日誌級別
+        en: Log Level
+        es-es: Nivel de Registro
+        ja: ログレベル
+        ms: Tahap Log
+        pt-br: Nível de Log
+        ru: Уровень журнала
+        ko: 로그 레벨
+        tr: Günlük Seviyesi
+      required: true
+      type: select
+      values:
+        - label: debug
+          value: debug
+        - label: info
+          value: info
+        - label: warn
+          value: warn
+        - label: error
+          value: error
+    # ==================== 监控配置 ====================
+    - default: "true"
+      envKey: INSTALL_MONITORING
+      label:
+        zh: 启用监控告警
+        zh-Hant: 啟用監控告警
+        en: Enable Monitoring
+        es-es: Habilitar Monitorización
+        ja: 監視を有効にする
+        ms: Dayakan Pemantauan
+        pt-br: Ativar Monitoramento
+        ru: Включить мониторинг
+        ko: 모니터링 활성화
+        tr: İzlemeyi Etkinleştir
+      required: true
+      type: select
+      values:
+        - label: "开启"
+          value: "true"
+        - label: "关闭"
+          value: "false"
+    - default: 2
+      edit: true
+      envKey: VM_MEMORY_LIMIT
+      label:
+        zh: VictoriaMetrics 内存限制（GB）
+        zh-Hant: VictoriaMetrics 記憶體限制（GB）
+        en: VictoriaMetrics Memory Limit (GB)
+        es-es: Límite de Memoria VictoriaMetrics (GB)
+        ja: VictoriaMetrics メモリ制限（GB）
+        ms: Had Memori VictoriaMetrics (GB)
+        pt-br: Limite de Memória VictoriaMetrics (GB)
+        ru: Лимит памяти VictoriaMetrics (GB)
+        ko: VictoriaMetrics 메모리 제한(GB)
+        tr: VictoriaMetrics Bellek Sınırı (GB)
+      required: true
+      type: number
+    - default: 1
+      edit: true
+      envKey: VM_CPU_LIMIT
+      label:
+        zh: VictoriaMetrics CPU 限制
+        zh-Hant: VictoriaMetrics CPU 限制
+        en: VictoriaMetrics CPU Limit
+        es-es: Límite de CPU VictoriaMetrics
+        ja: VictoriaMetrics CPU 制限
+        ms: Had CPU VictoriaMetrics
+        pt-br: Limite de CPU VictoriaMetrics
+        ru: Лимит CPU VictoriaMetrics
+        ko: VictoriaMetrics CPU 제한
+        tr: VictoriaMetrics CPU Sınırı
+      required: true
+      type: number
+    - default: 30
+      edit: true
+      envKey: VM_RETENTION
+      label:
+        zh: 监控数据保留天数
+        zh-Hant: 監控數據保留天數
+        en: Monitoring Data Retention (days)
+        es-es: Retención de Datos de Monitorización (días)
+        ja: 監視データ保持期間（日）
+        ms: Pengekalan Data Pemantauan (hari)
+        pt-br: Retenção de Dados de Monitoramento (dias)
+        ru: Хранение данных мониторинга (дней)
+        ko: 모니터링 데이터 보관(일)
+        tr: İzleme Verisi Saklama (gün)
+      required: true
+      type: number
+    - default: 15
+      edit: true
+      envKey: VMALERT_EVAL_INTERVAL
+      label:
+        zh: 告警评估间隔（秒）
+        zh-Hant: 告警評估間隔（秒）
+        en: Alert Evaluation Interval (s)
+        es-es: Intervalo de Evaluación de Alertas (s)
+        ja: アラート評価間隔（秒）
+        ms: Selang Penilaian Amaran (s)
+        pt-br: Intervalo de Avaliação de Alertas (s)
+        ru: Интервал оценки оповещений (с)
+        ko: 알림 평가 간격(초)
+        tr: Uyarı Değerlendirme Aralığı (sn)
+      required: true
+      type: number
+    # ==================== 管理员配置 ====================
+    - default: admin
+      envKey: ADMIN_USERNAME
+      label:
+        zh: 管理员用户名
+        zh-Hant: 管理員用戶名
+        en: Admin Username
+        es-es: Nombre de Usuario Admin
+        ja: 管理者ユーザー名
+        ms: Nama Pengguna Admin
+        pt-br: Nome de Usuário Admin
+        ru: Имя администратора
+        ko: 관리자 사용자 이름
+        tr: Yönetici Kullanıcı Adı
+      required: true
+      type: text
